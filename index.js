@@ -44,6 +44,42 @@ let db = new sqlite3.Database('./db/lab.db', sqlite3.OPEN_READWRITE, err => {
 				socket.emit('db-room', rows)
 			})
 		})
+
+		socket.on('db-get-name', (room) => {
+			let q = `SELECT DISTINCT fullname FROM room
+			WHERE room="${room}"`
+			db.all(q, [], (err,rows) => {
+				socket.emit('db-name', rows)
+				console.log(rows)
+			})
+		})
+		
+		
+
+		socket.on('db-get-all', (date,room,name) => {
+
+			let x = []
+
+			if(date)
+				x.push('date="'+date+'"')
+
+			if(room)
+				x.push('room="'+room+'"')
+
+			if (name)
+				x.push('fullname="'+name+'"')
+
+			let q = `SELECT * FROM rfid_temperature
+			JOIN room ON room.rfid=rfid_temperature.rfid
+			WHERE ${x.join(' AND ')}`
+
+			db.all(q, [], (err,rows) => {
+				 console.log(rows)
+				socket.emit('get-all', rows)
+			})
+		})
+
+
 	})
 	// - - - - -
 })
